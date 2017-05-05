@@ -6,9 +6,10 @@ import random
 
 community_deck = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 chance_deck = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+times_chance = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 secure_random = random.SystemRandom()
 def draw_chance(pointer):
-    global chance_deck, secure_random
+    global chance_deck, secure_random , times_chance
     if(len(chance_deck) == 0):
         chance_deck = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
     card = secure_random.choice(chance_deck)
@@ -43,6 +44,7 @@ def draw_chance(pointer):
     elif(card == 12): # go to Boardwalk
         pointer = 39
     chance_deck.remove(card)
+    times_chance[card] +=1
     return pointer
 
 def draw_community(pointer):
@@ -56,6 +58,11 @@ def draw_community(pointer):
         pointer = 10;#jail
     commnity_deck.remove(card)
     return pointer
+def get_percent(top , bottom):
+    percent = float(top)/float(bottom)
+    percent = percent*100
+    percent = "%.3f" % percent
+    return percent
 
 def main():
     print("Welcome to Monopoly Probability simulator")
@@ -86,13 +93,19 @@ def main():
             pointer = draw_chance(pointer)
         if(locations[pointer] == 'Community Chest'):
             pointer = draw_chance(pointer)
+        if(pointer == 30): # go to jail square
+            pointer = 10
         a_landed[pointer] += 1
         roll_distribution[roll-1] += 1
         roll_distribution[roll-2] += 1
     for i in range(40):
-        print(str(locations[i]) + ':' + str(a_landed[i]))
+        percentage = get_percent(a_landed[i], end_turn)
+        print(str(locations[i]) + ': ' + str(a_landed[i]) + ': %' + percentage)
     for i in range(6):
-        print(str(i+1) + ':' + str(roll_distribution[i]))
+        percentage = get_percent(roll_distribution[i],int(int(end_turn)*2))
+        print(str(i+1) + ':' + str(roll_distribution[i])+' : %'+ percentage)
+    for i in range(16):
+        print("Chance card #" + str(i) + ': ' + str(times_chance[i]))
     if(output_file == 'y'):
         wbcopy = copy(workbook)
         wbcopy_sheet = wbcopy.get_sheet(0)
